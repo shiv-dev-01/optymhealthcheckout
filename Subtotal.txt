@@ -1,0 +1,563 @@
+================================================================================
+Subtotal.txt — Pixel-perfect UI copy of:
+  • .savings-banner
+  • .your-total-div.is-expanded
+================================================================================
+
+SOURCE PAGE
+-----------
+File:   src/pages/paymentgetway/Checkout2.js
+Styles: src/pages/paymentgetway/rightside.css
+Theme:  src/index.css (:root CSS variables)
+
+GOAL
+----
+Copy these two components into another page with identical UI (spacing, padding,
+margin, border, radius, colors, typography, icons, alignment, responsive rules,
+hover/transitions) while keeping existing business logic and wiring dynamic
+values to existing state/variables (no hardcoded prices).
+
+RULES
+-----
+1. Pixel-perfect UI match.
+2. Reuse existing theme colors, fonts, and design system.
+3. Do NOT change business logic (no API / state / event / validation / payment changes).
+4. Keep existing functionality; only replace UI.
+5. Preserve class names, IDs, and behavior where possible.
+6. Fully responsive: Desktop, Tablet, Mobile.
+
+
+================================================================================
+1) REQUIRED IMPORTS (icons used by these components)
+================================================================================
+
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { MdOutlineCelebration } from "react-icons/md";
+import { CiStar } from "react-icons/ci";
+
+// Pricing helpers already used on Checkout2:
+import { formatMoney } from "../../utils/checkoutPricing";
+
+
+================================================================================
+2) REQUIRED STATE / HELPERS (already exist — do not invent new logic)
+================================================================================
+
+const [isExpanded, setIsExpanded] = useState(false);
+
+const handleExpandClick = () => {
+  setIsExpanded(!isExpanded);
+};
+
+const totalText = pricing.isDiscountApplied ? "Latest price" : "Your total";
+
+const renderComparedPrice = ({
+  original,
+  final,
+  showCompare,
+  finalClassName = "discounted-price",
+}) => {
+  if (!showCompare) {
+    return (
+      <span className="originsal-price">
+        {original != null ? `$${formatMoney(original)}` : ""}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <span className="original-price">${formatMoney(original)}</span>
+      <span className={finalClassName}>${formatMoney(final)}</span>
+    </>
+  );
+};
+
+
+DYNAMIC VALUES TO BIND (do not hardcode)
+----------------------------------------
+- pricing.totalDiscount
+- pricing.subtotal
+- pricing.grandTotal
+- pricing.isDiscountApplied
+- appliedDiscount
+- getproducts.length
+- totalText
+- isExpanded
+
+
+================================================================================
+3) EXACT JSX MARKUP (from Checkout2.js)
+================================================================================
+
+{/* ---------- .savings-banner ---------- */}
+{appliedDiscount && pricing.isDiscountApplied && (
+  <div className="savings-banner">
+    <MdOutlineCelebration size={22} />
+    <span>
+      You saved ${formatMoney(pricing.totalDiscount)} on your order
+    </span>
+  </div>
+)}
+
+{/* ---------- .your-total-div (.is-expanded when open) ---------- */}
+<div
+  className={`your-total-div${isExpanded ? " is-expanded" : ""}`}
+>
+  <div
+    className={`total-section ${isExpanded ? "expanded" : ""}`}
+    onClick={handleExpandClick}
+  >
+    <div className="total-details">
+      <CiStar
+        size={22}
+        color="var(--clr-main)"
+        className="star_icon"
+      />
+      {/* Latest price / Your total */}
+      <div className="total-details-label">
+        <span>{totalText}</span>
+
+        {getproducts.length > 0 && (
+          <span className="product-price">
+            {renderComparedPrice({
+              original: pricing.subtotal,
+              final: pricing.grandTotal,
+              showCompare: pricing.isDiscountApplied,
+            })}
+          </span>
+        )}
+      </div>
+
+      <div className="expand-button">
+        <span>
+          {isExpanded ? <FaAngleUp /> : <FaAngleDown />}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {isExpanded && (
+    <div className="expanded-content">
+      {appliedDiscount && pricing.isDiscountApplied && (
+        <div className="pricing-row savings-row">
+          <p className="pricing-row-label">Your Coupon Savings</p>
+          <div className="pricing-row-value">
+            <span className="savings-amount">
+              ${formatMoney(pricing.totalDiscount)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="pricing-row">
+        <p className="pricing-row-label">Subtotal</p>
+        <div className="product-price">
+          {getproducts.length > 0 &&
+            renderComparedPrice({
+              original: pricing.subtotal,
+              final: pricing.grandTotal,
+              showCompare: pricing.isDiscountApplied,
+            })}
+        </div>
+      </div>
+
+      <div className="pricing-row">
+        <p className="pricing-row-label">Estimated Tax</p>
+        <div className="pricing-row-value">
+          <span className="originsal-price">---</span>
+        </div>
+      </div>
+
+      <div className="pricing-row">
+        <p className="pricing-row-label">Shipping</p>
+        <div className="pricing-row-value">
+          <span className="originsal-price">$0</span>
+        </div>
+      </div>
+
+      <hr className="pricing-divider" />
+
+      <div className="pricing-row total-row">
+        <p className="pricing-row-label">Total</p>
+        <div className="product-price">
+          {getproducts.length > 0 &&
+            renderComparedPrice({
+              original: pricing.subtotal,
+              final: pricing.grandTotal,
+              showCompare: pricing.isDiscountApplied,
+            })}
+        </div>
+      </div>
+
+      {/*
+        NOTE: Checkout2 also includes an order-summary disclaimer box inside
+        expanded-content (inline styles + PRODUCT_DISCLAIMER_CONFIG).
+        Keep that logic on the source page as-is; only copy UI for the
+        pricing rows above unless the destination page already has the same
+        disclaimer logic.
+      */}
+    </div>
+  )}
+</div>
+
+
+================================================================================
+4) THEME TOKENS (from src/index.css :root)
+================================================================================
+
+--clr-main: #6ea0a9
+--clr-white: #fff
+--clr-red-dark: hsl(360, 67%, 44%)
+--clr-green-dark: hsl(125, 67%, 44%)
+--clr-text: #111
+--clr-text-secondary: #333
+--clr-border: #e0e0e0
+--clr-card-bg: #fff
+--transition: all 0.3s linear
+--font-base: "Gibson"
+
+
+================================================================================
+5) EXACT CSS (from rightside.css — copy these rules as-is)
+================================================================================
+
+.savings-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--clr-main) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--clr-main) 28%, #fff);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 16px 0 12px;
+  color: var(--clr-text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.savings-banner svg {
+  flex-shrink: 0;
+  color: var(--clr-main);
+  width: 22px;
+  height: 22px;
+}
+
+.savings-banner span {
+  color: var(--clr-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.savings-banner img {
+  width: 20px;
+  height: 20px;
+}
+
+.your-total-div {
+  margin-top: 4px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--clr-card-bg);
+}
+
+.your-total-div.is-expanded {
+  border: 1px solid var(--clr-border);
+}
+
+.total-section {
+  background: var(--clr-card-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.your-total-div.is-expanded .total-section {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid transparent;
+}
+
+.total-section:hover {
+  border-color: var(--clr-main);
+}
+
+.your-total-div.is-expanded .total-section:hover {
+  border-color: transparent;
+}
+
+.total-details {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  color: var(--clr-text);
+  width: 100%;
+}
+
+.total-details img {
+  width: 25px;
+  height: 25px;
+}
+
+.total-details-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--clr-main);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.total-details-label .product-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.total-details-label .product-price .original-price {
+  color: var(--clr-red-dark);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-right: 0;
+}
+
+.total-details-label .product-price .discounted-price,
+.total-details-label .product-price .originsal-price {
+  color: var(--clr-main);
+  font-size: 17px;
+  font-weight: 700;
+  margin-right: 0;
+}
+
+.total-details span {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--clr-main);
+}
+
+.expand-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--clr-main);
+  flex-shrink: 0;
+}
+
+.expand-button span {
+  color: var(--clr-main);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.expanded-content {
+  padding: 4px 18px 18px;
+  margin: 0 !important;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+  min-height: 24px;
+}
+
+.pricing-row:first-child {
+  margin-top: 0;
+}
+
+.pricing-row-label {
+  color: var(--clr-text);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pricing-row-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: right;
+}
+
+.pricing-row-value,
+.pricing-row .product-price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pricing-row .product-price .original-price,
+.pricing-row-value .original-price {
+  color: var(--clr-red-dark);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 0;
+}
+
+.pricing-row .product-price .discounted-price,
+.pricing-row-value .discounted-price {
+  color: var(--clr-green-dark);
+  font-size: 15px;
+  font-weight: 600;
+  margin-right: 0;
+}
+
+.pricing-row .product-price .originsal-price,
+.pricing-row-value .originsal-price {
+  color: var(--clr-text);
+  font-size: 15px;
+  font-weight: 500;
+  margin-right: 0;
+}
+
+.pricing-row.savings-row .pricing-row-label {
+  font-weight: 700;
+}
+
+.pricing-row.savings-row .savings-amount {
+  color: var(--clr-green-dark);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pricing-divider {
+  border: none;
+  border-top: 1px solid var(--clr-border);
+  margin: 16px 0 4px;
+}
+
+.pricing-row.total-row {
+  margin-top: 12px;
+}
+
+.pricing-row.total-row .pricing-row-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pricing-row.total-row .product-price .discounted-price,
+.pricing-row.total-row .product-price .originsal-price {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+================================================================================
+6) RESPONSIVE CSS (max-width: 768px)
+================================================================================
+
+@media (max-width: 768px) {
+  .your-total-div {
+    margin-top: 15px;
+  }
+
+  .savings-banner {
+    padding: 12px 14px;
+    font-size: 14px;
+    gap: 10px;
+  }
+
+  .savings-banner span {
+    font-size: 14px;
+  }
+
+  .total-section {
+    padding: 14px 14px;
+  }
+
+  .total-details-label {
+    font-size: 15px;
+  }
+
+  .total-details-label .product-price .discounted-price,
+  .total-details-label .product-price .originsal-price {
+    font-size: 15px;
+  }
+
+  .expanded-content {
+    padding: 2px 14px 16px;
+  }
+
+  .pricing-row {
+    margin-top: 12px;
+  }
+
+  .pricing-row-label {
+    font-size: 14px;
+  }
+
+  .pricing-row .product-price .discounted-price,
+  .pricing-row .product-price .originsal-price,
+  .pricing-row-value .originsal-price,
+  .pricing-row.savings-row .savings-amount {
+    font-size: 14px;
+  }
+}
+
+
+================================================================================
+7) VISUAL / BEHAVIOR CHECKLIST (pixel-perfect)
+================================================================================
+
+.savings-banner
+- Flex row, align center, gap 12px (10px on mobile)
+- Soft main-tint background + main-tint border, radius 8px
+- Padding 14x16 (12x14 mobile), margin 16px 0 12px
+- Celebration icon 22px in --clr-main
+- Text: "You saved $X.XX on your order" — 15px/600 (14px mobile)
+- Shown only when appliedDiscount && pricing.isDiscountApplied
+
+.your-total-div
+- Collapsed: no outer border; total-section has own border/radius 8px
+- Expanded (.is-expanded): outer 1px --clr-border; total-section border removed
+- Hover on collapsed total-section: border-color -> --clr-main
+- Hover when expanded: border stays transparent
+- Grid header: 40px | 1fr | 40px (star | label+price | chevron)
+- Label: "Latest price" when discount applied, else "Your total"
+- Compared price: strike original (--clr-red-dark) + final (--clr-main)
+- Expand toggles FaAngleUp / FaAngleDown; no logic changes to handlers
+- Expanded rows: Coupon Savings (optional), Subtotal, Estimated Tax (---),
+  Shipping ($0), divider, Total
+- Mobile: tighter padding/font sizes as listed above
+
+
+================================================================================
+8) DO / DON'T
+================================================================================
+
+DO
+- Copy class names exactly (.savings-banner, .your-total-div, .is-expanded, etc.)
+- Import/reuse rightside.css rules or paste the CSS block above unchanged
+- Bind prices to pricing.* + formatMoney / renderComparedPrice
+- Keep handleExpandClick / isExpanded behavior the same
+
+DON'T
+- Hardcode dollar amounts for savings/subtotal/total
+- Change coupon API, payment, validation, or pricing calculation
+- Restyle with new colors/fonts/shadows/radius
+- Rename classes or remove hover/transition rules
+
+================================================================================
+END OF Subtotal.txt
+================================================================================
